@@ -26,9 +26,11 @@ namespace HDT.Plugins.Advisor
         private static Flyout _notificationFlyout;
         private readonly AdvisorOverlay _advisorOverlay;
         private Guid _currentArchetypeDeckGuid;
+        private List<Card> _oponentCards;
 
         public Advisor(AdvisorOverlay overlay)
         {
+            _oponentCards = new List<Card>();
             _notificationFlyout = CreateDialogFlyout();
             _settingsFlyout = CreateSettingsFlyout();
             Settings.Default.PropertyChanged += Settings_PropertyChanged;
@@ -161,11 +163,13 @@ namespace HDT.Plugins.Advisor
 
         internal void OpponentHandDiscard(Card card)
         {
+            _oponentCards.Add(card);
             UpdateCardList();
         }
 
         internal void OpponentJoustReveal(Card card)
         {
+            _oponentCards.Add(card);
             UpdateCardList();
         }
 
@@ -176,6 +180,7 @@ namespace HDT.Plugins.Advisor
 
         internal void OpponentDeckDiscard(Card card)
         {
+            _oponentCards.Add(card);
             UpdateCardList();
         }
 
@@ -222,9 +227,11 @@ namespace HDT.Plugins.Advisor
             {
                 // Create archetype dictionary
                 // Calculate similarities between all opponent's class archetype decks and all yet known opponent cards. Exclude wild decks in standard format using NAND expression. OR expression should also work: (!d.IsWildDeck || CoreAPI.Game.CurrentFormat == Format.Wild)
+                // Orders the decks according to game format
                 IDictionary<Deck, float> dict = ArchetypeDecks
                     .Where(d => d.Class == CoreAPI.Game.Opponent.Class && !(d.IsWildDeck && CoreAPI.Game.CurrentFormat == Format.Standard))
                     .Distinct()
+                    .OrderBy(d => d.IsWildDeck ^ CoreAPI.Game.CurrentFormat == Format.Wild)
                     .ToDictionary(d => d, d => d.Similarity(opponentCardlist));
 
                 // Get highest similarity value
@@ -242,17 +249,19 @@ namespace HDT.Plugins.Advisor
                     var topGamesDecks = topSimDecks.Where(t => t.Key.GetPlayedGames() == maxGames).ToList();
                     // Select best matched deck with both highest similarity value and most played games
                     var matchedDeck = topGamesDecks.First();
+                    // Add an asterisk if the type of the found deck is wild
+                    var wildText = matchedDeck.Key.IsWildDeck ? "*" : "";
 
                     // Show matched deck name and similarity value or number of matching cards and number of all played cards
                     if (Settings.Default.ShowAbsoluteSimilarity)
                     {
                         // Count how many cards from opponent deck are in matched deck
                         var matchingCards = matchedDeck.Key.CountMatchingCards(opponentCardlist);
-                        _advisorOverlay.LblArchetype.Text = $"{matchedDeck.Key.Name} ({matchingCards}/{matchedDeck.Key.CountUnion(opponentCardlist)})";
+                        _advisorOverlay.LblArchetype.Text = $"{matchedDeck.Key.Name}{wildText} ({matchingCards}/{matchedDeck.Key.CountUnion(opponentCardlist)})";
                     }
                     else
                     {
-                        _advisorOverlay.LblArchetype.Text = $"{matchedDeck.Key.Name} ({Math.Round(matchedDeck.Value * 100, 2)}%)";
+                        _advisorOverlay.LblArchetype.Text = $"{matchedDeck.Key.Name}{wildText} ({Math.Round(matchedDeck.Value * 100, 2)}%)";
                     }
 
                     _advisorOverlay.LblStats.Text = matchedDeck.Key.Note;
