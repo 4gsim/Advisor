@@ -21,7 +21,7 @@ namespace HDT.Plugins.Advisor.Layout
 
         private async void Menu_ImportMetastatsDecks_Click(object sender, RoutedEventArgs e)
         {
-            await Advisor.ImportMetastatsDecks();
+            await Advisor.ImportArchetypeDecks();
         }
 
         private void Menu_DeleteArchetypeDecks_Click(object sender, RoutedEventArgs e)

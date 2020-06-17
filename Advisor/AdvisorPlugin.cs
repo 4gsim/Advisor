@@ -5,9 +5,11 @@ using System.Windows.Controls;
 using HDT.Plugins.Advisor.Layout;
 using HDT.Plugins.Advisor.Properties;
 using HDT.Plugins.Advisor.Services;
+using Hearthstone_Deck_Tracker;
 using Hearthstone_Deck_Tracker.API;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using Core = Hearthstone_Deck_Tracker.API.Core;
 
 namespace HDT.Plugins.Advisor
 {
@@ -80,11 +82,11 @@ namespace HDT.Plugins.Advisor
         {
         }
 
-        public Version Version => new Version(1, 0, 14);
+        public Version Version => new Version(1, 1, 0);
 
         public async Task CheckForUpdate()
         {
-            var latest = await Github.CheckForUpdate("kimsey0", "Advisor", Version);
+            var latest = await Github.CheckForUpdate("4gsim", "Advisor", Version);
             if (latest != null)
             {
                 Advisor.Notify("Plugin update available", $"[DOWNLOAD]({latest.HtmlUrl}) Advisor {latest.TagName}", 0,

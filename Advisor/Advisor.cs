@@ -26,11 +26,9 @@ namespace HDT.Plugins.Advisor
         private static Flyout _notificationFlyout;
         private readonly AdvisorOverlay _advisorOverlay;
         private Guid _currentArchetypeDeckGuid;
-        private List<Card> _oponentCards;
 
         public Advisor(AdvisorOverlay overlay)
         {
-            _oponentCards = new List<Card>();
             _notificationFlyout = CreateDialogFlyout();
             _settingsFlyout = CreateSettingsFlyout();
             Settings.Default.PropertyChanged += Settings_PropertyChanged;
@@ -163,13 +161,11 @@ namespace HDT.Plugins.Advisor
 
         internal void OpponentHandDiscard(Card card)
         {
-            _oponentCards.Add(card);
             UpdateCardList();
         }
 
         internal void OpponentJoustReveal(Card card)
         {
-            _oponentCards.Add(card);
             UpdateCardList();
         }
 
@@ -180,7 +176,6 @@ namespace HDT.Plugins.Advisor
 
         internal void OpponentDeckDiscard(Card card)
         {
-            _oponentCards.Add(card);
             UpdateCardList();
         }
 
@@ -257,15 +252,15 @@ namespace HDT.Plugins.Advisor
                     {
                         // Count how many cards from opponent deck are in matched deck
                         var matchingCards = matchedDeck.Key.CountMatchingCards(opponentCardlist);
-                        _advisorOverlay.LblArchetype.Text = $"{matchedDeck.Key.Name}{wildText} ({matchingCards}/{matchedDeck.Key.CountUnion(opponentCardlist)})";
+                        _advisorOverlay.LblArchetype.Text = $"{matchedDeck.Key.Class} - {matchedDeck.Key.Name}{wildText} ({matchingCards}/{matchedDeck.Key.CountUnion(opponentCardlist)})";
                     }
                     else
                     {
-                        _advisorOverlay.LblArchetype.Text = $"{matchedDeck.Key.Name}{wildText} ({Math.Round(matchedDeck.Value * 100, 2)}%)";
+                        _advisorOverlay.LblArchetype.Text = $"{matchedDeck.Key.Class} - {matchedDeck.Key.Name}{wildText} ({Math.Round(matchedDeck.Value * 100, 2)}%)";
                     }
 
                     _advisorOverlay.LblStats.Text = matchedDeck.Key.Note;
-                    var deck = DeckList.Instance.Decks.Where(d => d.TagList.ToLowerInvariant().Contains("archetype")).First(d => d.Name == matchedDeck.Key.Name);
+                    var deck = DeckList.Instance.Decks.Where(d => d.TagList.ToLowerInvariant().Contains("archetype")).First(d => d.DeckId == matchedDeck.Key.DeckId);
 
                     var predictedCards = ((Deck) deck.Clone()).Cards.ToList();
 
@@ -274,7 +269,7 @@ namespace HDT.Plugins.Advisor
                         // Remove already played opponent cards from predicted archetype deck. But don't remove revealed jousted cards, because they were only seen and not played yet.
                         if (predictedCards.Contains(card))
                         {
-                            var item = predictedCards.Find(x => x.Id == card.Id);
+                            var item = predictedCards.Find(x => x.DbfIf == card.DbfIf);
 
                             if (!card.Jousted)
                             {
@@ -359,7 +354,7 @@ namespace HDT.Plugins.Advisor
             _notificationFlyout.IsOpen = true;
         }
 
-        public static async Task ImportMetastatsDecks()
+        public static async Task ImportArchetypeDecks()
         {
             //construct Progress<T>, passing ReportProgress as the Action<T> 
             var progressIndicator = new Progress<Tuple<int, int>>(ReportProgress);

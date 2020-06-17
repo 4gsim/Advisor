@@ -19,8 +19,6 @@ namespace HDT.Plugins.Advisor.Services.MetaStats
 {
     public class SnapshotImporter
     {
-        private const string MetastatsBaseUrl = "http://metastats.net";
-
         private static readonly IDictionary<int, string> HsReplayClassIdToName = new Dictionary<int, string>
         {
             {14, "DemonHunter"},

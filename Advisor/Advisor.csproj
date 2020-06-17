@@ -113,7 +113,7 @@
     </Compile>
     <Compile Include="AdvisorSettingsProvider.cs" />
     <Compile Include="Services\GitHub.cs" />
-    <Compile Include="Services\MetaStats\SnapshotImporter.cs" />
+    <Compile Include="Services\SnapshotImporter.cs" />
     <Compile Include="Services\TrackerRepository.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
